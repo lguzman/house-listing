@@ -1,0 +1,36 @@
+<header>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/listings">Listings</a>
+        <span id="auth-links">
+            <a href="/login">Login</a>
+            <a href="/register">Register</a>
+        </span>
+    </nav>
+</header>
+
+<script>
+    async function updateNavbar() {
+        try {
+            const response = await fetch('/session');
+            const data = await response.json();
+            const authLinks = document.getElementById('auth-links');
+
+            if (data.loggedIn) {
+                authLinks.innerHTML = `
+                    <span>Welcome, ${data.user.username}!</span>
+                    <a href="#" onclick="logout()">Logout</a>
+                `;
+            }
+        } catch (error) {
+            console.error('Error fetching session data:', error);
+        }
+    }
+
+    async function logout() {
+        await fetch('/logout');
+        location.reload();
+    }
+
+    updateNavbar();
+</script>

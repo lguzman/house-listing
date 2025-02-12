@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Listing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            background: #333;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+        nav {
+            background: #444;
+            padding: 10px;
+            text-align: center;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+        }
+        main {
+            padding: 20px;
+            text-align: center;
+        }
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+    <script>
+        async function checkAuth() {
+            const response = await fetch('/session');
+            const user = await response.json();
+            const navbar = document.getElementById('navbar');
+
+            if (user.username) {
+                navbar.innerHTML = `
+                    <a href="/">Home</a>
+                    <a href="/listings">Listings</a>
+                    <a href="#">About</a>
+                    <a href="#">Contact</a>
+                    <span>Welcome, ${user.username}!</span>
+                    <a href="#" onclick="logout()">Logout</a>
+                `;
+            } else {
+                navbar.innerHTML = `
+                    <a href="/">Home</a>
+                    <a href="/listings">Listings</a>
+                    <a href="#">About</a>
+                    <a href="#">Contact</a>
+                    <a href="/login.html">Login</a>
+                    <a href="/register.html">Register</a>
+                `;
+            }
+        }
+
+        async function logout() {
+            await fetch('/logout');
+            location.reload();
+        }
+
+        window.onload = checkAuth;
+    </script>
+</head>
+<body>
+    <header>
+        <h1>THIS IS HTML</h1>
+    </header>
+    <nav id="navbar">
+        <a href="/">Home</a>
+        <a href="/listings">Listings</a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+        <a href="/login.html">Login</a>
+        <a href="/register.html">Register</a>
+    </nav>
+    <main>
+        <h2>Welcome to our House Listings!</h2>
+        <p>Find your dream home with us.</p>
+    </main>
+    <footer>
+        <p>&copy; 2025 House Listing. All rights reserved.</p>
+    </footer>
+</body>
+</html>
