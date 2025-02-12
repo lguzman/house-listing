@@ -15,7 +15,7 @@
         <br>
         <button type="submit">Register</button>
     </form>
-    <p id="message"></p>
+    <p id="message" style="color: red;"></p>
     <script>
         document.getElementById('registerForm').addEventListener('submit', async function(event) {
             event.preventDefault();
@@ -24,13 +24,22 @@
                 password: document.getElementById('password').value,
                 access_level: document.getElementById('access_level').value
             };
-            const response = await fetch('/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-            const result = await response.text();
-            document.getElementById('message').innerText = result;
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    window.location.href = '/login'; // Redirect on success
+                } else {
+                    document.getElementById('message').innerText = result.message; // Show error message
+                }
+            } catch (error) {
+                document.getElementById('message').innerText = 'Registration failed. Please try again.';
+            }
         });
     </script>
 ` }) %>

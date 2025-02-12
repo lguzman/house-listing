@@ -23,12 +23,18 @@ app.use(session({
     cookie: { secure: false } // Set to true if using HTTPS
 }));
 
+// Middleware to make session data available in views
+app.use((req, res, next) => {
+    res.locals.user = req.session.user || null;
+    next();
+});
+
 // MySQL Connection
 const dbConfig = {
     host: 'localhost',
     user: 'root',
-    password: 'yourpassword',
-    database: 'yourdatabase'
+    password: 'UPPR1',
+    database: 'real_estate'
 };
 
 // ✅ Serve Home Page
@@ -67,7 +73,8 @@ app.post('/register', async (req, res) => {
         await connection.end();
         res.redirect('/login'); // Redirect to login after registration
     } catch (error) {
-        res.status(500).send('Error registering user');
+        console.error("Registration Error:", error); // ✅ Logs error in the terminal
+        res.status(500).send(`Error registering user: ${error.message}`); // ✅ Sends error message to the browser
     }
 });
 
@@ -93,7 +100,8 @@ app.post('/login', async (req, res) => {
             res.status(401).send('Invalid credentials');
         }
     } catch (error) {
-        res.status(500).send('Error logging in');
+        console.error("Login Error:", error);
+        res.status(500).send(`Error logging in: ${error.message}`);
     }
 });
 
@@ -140,7 +148,8 @@ app.post('/create-admin', requireAuth, async (req, res) => {
         await connection.end();
         res.send('Admin account created');
     } catch (error) {
-        res.status(500).send('Error creating admin');
+        console.error("Admin Creation Error:", error);
+        res.status(500).send(`Error creating admin: ${error.message}`);
     }
 });
 
