@@ -5,8 +5,8 @@ async function createAdminUser() {
     const connection = await mysql.createConnection({
         host: 'localhost',
         user: 'root',
-        password: 'yourpassword',
-        database: 'yourdatabase'
+        password: 'UPPR1',
+        database: 'real_estate'
     });
 
     const username = 'admin';

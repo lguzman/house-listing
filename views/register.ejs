@@ -8,7 +8,7 @@
         <input type="password" id="password" name="password" required>
         <br>
         <label for="access_level">Account Type:</label>
-        <select id="access_level" name="access_level">
+        <select id="access_level" name="access_level" required>
             <option value="user">User</option>
             <option value="agent">Agent</option>
         </select>
@@ -16,26 +16,33 @@
         <button type="submit">Register</button>
     </form>
     <p id="message" style="color: red;"></p>
+
     <script>
         document.getElementById('registerForm').addEventListener('submit', async function(event) {
             event.preventDefault();
             const formData = {
-                username: document.getElementById('username').value,
+                username: document.getElementById('username').value.trim(),
                 password: document.getElementById('password').value,
                 access_level: document.getElementById('access_level').value
             };
+
+            if (!formData.username || !formData.password) {
+                document.getElementById('message').innerText = 'All fields are required.';
+                return;
+            }
+
             try {
                 const response = await fetch('/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
                 });
-                const result = await response.json();
-                
-                if (result.success) {
+
+                if (response.ok) {
                     window.location.href = '/login'; // Redirect on success
                 } else {
-                    document.getElementById('message').innerText = result.message; // Show error message
+                    const result = await response.json();
+                    document.getElementById('message').innerText = result.message || 'Registration failed.';
                 }
             } catch (error) {
                 document.getElementById('message').innerText = 'Registration failed. Please try again.';
