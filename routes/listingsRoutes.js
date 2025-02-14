@@ -2,7 +2,10 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
+
+// ✅ Debug log to check if the controller is loading properly
 const listingsController = require('../controllers/listingsController');
+console.log('Loaded Listings Controller:', Object.keys(listingsController));
 
 // ✅ Set up storage for Multer
 const storage = multer.diskStorage({
@@ -36,5 +39,12 @@ router.get('/:id', listingsController.getListing);
 router.get('/:id/edit', requireAgentOrAdmin, listingsController.showEditForm);
 router.post('/:id', requireAgentOrAdmin, upload.single('image'), listingsController.updateListing); // ⬅️ Handles image update
 router.post('/:id/delete', requireAgentOrAdmin, listingsController.deleteListing);
+
+// ✅ Like/Unlike Listing Route (Only add if it exists)
+if (typeof listingsController.toggleLike === 'function') {
+    router.post('/:id/like', requireAuth, listingsController.toggleLike);
+} else {
+    console.warn('⚠️ Warning: toggleLike function is missing in listingsController.');
+}
 
 module.exports = router;

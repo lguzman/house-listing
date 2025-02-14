@@ -62,7 +62,7 @@ exports.createListing = async (req, res) => {
 exports.getListing = async (req, res) => {
     try {
         const [listing] = await mysql.execute(`
-            SELECT listings.*, users.username, users.access_level 
+            SELECT listings.*, users.username, users.access_level
             FROM listings 
             JOIN users ON listings.user_id = users.id
             WHERE listings.id = ?`, 
@@ -71,10 +71,65 @@ exports.getListing = async (req, res) => {
 
         if (!listing.length) return res.status(404).send('Listing not found');
 
-        res.render('listings/show', { listing: listing[0], user: req.session.user });
+        // Fetch total like count
+        const [[{ likeCount }]] = await mysql.execute(
+            'SELECT COUNT(*) AS likeCount FROM likes WHERE listing_id = ?',
+            [req.params.id]
+        );
+
+        let userLiked = false;
+        if (req.session.user) {
+            const [likes] = await mysql.execute(
+                'SELECT * FROM likes WHERE user_id = ? AND listing_id = ?',
+                [req.session.user.id, req.params.id]
+            );
+            userLiked = likes.length > 0;
+        }
+
+        res.render('listings/show', { listing: listing[0], user: req.session.user, likeCount, userLiked });
     } catch (error) {
         console.error('Error fetching listing:', error);
         res.status(500).send('Internal Server Error');
+    }
+};
+
+// Toggle like on a listing
+exports.toggleLike = async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        const userId = req.session.user.id;
+        const listingId = req.params.id;
+
+        // Check if the user already liked the listing
+        const [existingLike] = await mysql.execute(
+            'SELECT * FROM likes WHERE user_id = ? AND listing_id = ?',
+            [userId, listingId]
+        );
+
+        let liked;
+        if (existingLike.length > 0) {
+            // Unlike the listing
+            await mysql.execute('DELETE FROM likes WHERE user_id = ? AND listing_id = ?', [userId, listingId]);
+            liked = false;
+        } else {
+            // Like the listing
+            await mysql.execute('INSERT INTO likes (user_id, listing_id) VALUES (?, ?)', [userId, listingId]);
+            liked = true;
+        }
+
+        // Get updated like count
+        const [likeCountResult] = await mysql.execute(
+            'SELECT COUNT(*) AS likeCount FROM likes WHERE listing_id = ?',
+            [listingId]
+        );
+
+        res.json({ liked, likeCount: likeCountResult[0].likeCount });
+    } catch (error) {
+        console.error('Error toggling like:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 };
 

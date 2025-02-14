@@ -1,21 +1,62 @@
-<%- include('layout', { content: `
-    <h2>Register</h2>
-    <form id="registerForm">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required>
-        <br>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
-        <br>
-        <label for="access_level">Account Type:</label>
-        <select id="access_level" name="access_level" required>
-            <option value="user">User</option>
-            <option value="agent">Agent</option>
-        </select>
-        <br>
-        <button type="submit">Register</button>
-    </form>
-    <p id="message" style="color: red;"></p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+        header { background: #333; color: white; padding: 10px 0; text-align: center; }
+        nav { background: #444; padding: 10px; text-align: center; display: flex; align-items: center; }
+        nav a { color: white; text-decoration: none; margin: 0 15px; }
+        .nav-right { margin-left: auto; }
+        main { padding: 20px; text-align: center; }
+        footer { background: #333; color: white; text-align: center; padding: 10px; position: relative; margin-top: 20px; width: 100%; }
+        .form-container { background: white; padding: 20px; max-width: 400px; margin: auto; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .form-container input, .form-container select, .form-container button {
+            width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px;
+        }
+        .btn { background: #333; color: white; border: none; cursor: pointer; }
+        .btn:hover { background: #555; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav id="navbar">
+            <a href="/">Home</a>
+            <a href="/listings">Listings</a>
+            <span class="nav-right">
+                <a href="/login">Login</a>
+                <a href="/register">Register</a>
+            </span>
+        </nav>
+    </header>
+
+    <main>
+        <div class="form-container">
+            <h2>Register</h2>
+            <form id="registerForm">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+                <br>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+                <br>
+                <label for="access_level">Account Type:</label>
+                <select id="access_level" name="access_level" required>
+                    <option value="user">User</option>
+                    <option value="agent">Agent</option>
+                </select>
+                <br>
+                <button type="submit" class="btn">Register</button>
+            </form>
+            <p id="message" style="color: red;"></p>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 House Listing. All rights reserved.</p>
+    </footer>
 
     <script>
         document.getElementById('registerForm').addEventListener('submit', async function(event) {
@@ -49,4 +90,5 @@
             }
         });
     </script>
-` }) %>
+</body>
+</html>
