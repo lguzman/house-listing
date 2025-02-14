@@ -1,10 +1,10 @@
 const express = require('express');
 const session = require('express-session');
-const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
 const path = require('path');
 
 const listingsRoutes = require('./routes/listingsRoutes'); // ✅ Import listings routes
+const pool = require('./config/db'); // ✅ Import shared DB connection
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -31,14 +31,6 @@ app.use((req, res, next) => {
     next();
 });
 
-// MySQL Connection
-const dbConfig = {
-    host: 'localhost',
-    user: 'root',
-    password: 'UPPR1',
-    database: 'real_estate'
-};
-
 // ✅ Serve Home Page
 app.get('/', (req, res) => res.render('home'));
 
@@ -53,10 +45,13 @@ app.post('/register', async (req, res) => {
     if (!['user', 'agent'].includes(access_level)) return res.status(403).send('Invalid access level');
 
     try {
-        const connection = await mysql.createConnection(dbConfig);
         const hashedPassword = await bcrypt.hash(password, 10);
-        await connection.execute('INSERT INTO users (username, password, access_level) VALUES (?, ?, ?)', [username, hashedPassword, access_level]);
-        await connection.end();
+        const connection = await pool.getConnection();
+        await connection.execute(
+            'INSERT INTO users (username, password, access_level) VALUES (?, ?, ?)',
+            [username, hashedPassword, access_level]
+        );
+        connection.release();
         res.redirect('/login'); // Redirect to login after registration
     } catch (error) {
         console.error("Registration Error:", error);
@@ -70,9 +65,9 @@ app.post('/login', async (req, res) => {
     if (!username || !password) return res.status(400).send('Username and password are required');
 
     try {
-        const connection = await mysql.createConnection(dbConfig);
+        const connection = await pool.getConnection();
         const [users] = await connection.execute('SELECT * FROM users WHERE username = ?', [username]);
-        await connection.end();
+        connection.release();
 
         if (users.length === 0 || !(await bcrypt.compare(password, users[0].password))) {
             return res.status(401).send('Invalid credentials');
@@ -110,10 +105,13 @@ app.post('/create-admin', requireAuth, async (req, res) => {
     if (!username || !password) return res.status(400).send('Username and password required');
 
     try {
-        const connection = await mysql.createConnection(dbConfig);
         const hashedPassword = await bcrypt.hash(password, 10);
-        await connection.execute('INSERT INTO users (username, password, access_level) VALUES (?, ?, ?)', [username, hashedPassword, 'admin']);
-        await connection.end();
+        const connection = await pool.getConnection();
+        await connection.execute(
+            'INSERT INTO users (username, password, access_level) VALUES (?, ?, ?)',
+            [username, hashedPassword, 'admin']
+        );
+        connection.release();
         res.send('Admin account created');
     } catch (error) {
         console.error("Admin Creation Error:", error);
