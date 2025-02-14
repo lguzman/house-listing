@@ -1,4 +1,5 @@
 const mysql = require('../config/db.js');
+const path = require('path');
 
 // Get all listings
 exports.getListings = async (req, res) => {
@@ -30,6 +31,7 @@ exports.createListing = async (req, res) => {
 
         let { price, type, status } = req.body;
         const userId = req.session.user.id;
+        let image_url = req.body.image_url || null;
 
         // Ensure required fields are provided
         if (!price || !type || !status) {
@@ -39,9 +41,14 @@ exports.createListing = async (req, res) => {
         // Convert price to a float
         price = parseFloat(price);
 
+        // Check if file was uploaded
+        if (req.file) {
+            image_url = `/uploads/${req.file.filename}`;
+        }
+
         await mysql.execute(
-            'INSERT INTO listings (price, type, status, user_id) VALUES (?, ?, ?, ?)',
-            [price, type, status, userId]
+            'INSERT INTO listings (price, type, status, user_id, image_url) VALUES (?, ?, ?, ?, ?)',
+            [price, type, status, userId, image_url]
         );
 
         res.redirect('/listings');
@@ -96,6 +103,7 @@ exports.updateListing = async (req, res) => {
         }
 
         let { price, type, status } = req.body;
+        let image_url = req.body.image_url; // Default to existing image
 
         // Ensure required fields are provided
         if (!price || !type || !status) {
@@ -105,12 +113,21 @@ exports.updateListing = async (req, res) => {
         // Convert price to a float
         price = parseFloat(price);
 
-        await mysql.execute(
-            'UPDATE listings SET price = ?, type = ?, status = ? WHERE id = ?',
-            [price, type, status, req.params.id]
+        // Check if file was uploaded
+        if (req.file) {
+            image_url = `/uploads/${req.file.filename}`;
+        }
+
+        const [result] = await mysql.execute(
+            'UPDATE listings SET price = ?, type = ?, status = ?, image_url = ? WHERE id = ?',
+            [price, type, status, image_url, req.params.id]
         );
 
-        res.redirect('/listings');
+        if (result.affectedRows === 0) {
+            return res.status(404).send('Listing not found or no changes made');
+        }
+
+        res.redirect(`/listings/${req.params.id}`);
     } catch (error) {
         console.error('Error updating listing:', error);
         res.status(500).send('Internal Server Error');

@@ -7,16 +7,18 @@
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
         header { background: #333; color: white; padding: 10px 0; text-align: center; }
-        nav { background: #444; padding: 10px; text-align: center; display: flex; align-items: center; }
+        nav { background: #444; padding: 10px; display: flex; align-items: center; justify-content: space-between; }
         nav a { color: white; text-decoration: none; margin: 0 15px; }
-        .nav-right { margin-left: auto; }
+        .nav-right { margin-left: auto; display: flex; align-items: center; }
+        .nav-right span { margin-right: 15px; }
         main { padding: 20px; text-align: center; }
-        footer { background: #333; color: white; text-align: center; padding: 10px; position: absolute; bottom: 0; width: 100%; }
+        footer { background: #333; color: white; text-align: center; padding: 10px; position: relative; bottom: 0; width: 100%; }
         form { background: white; padding: 20px; border-radius: 5px; box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); width: 50%; margin: auto; text-align: left; }
         label { display: block; margin-top: 10px; }
         select, input { width: 100%; padding: 5px; margin-top: 5px; }
         button { background: #28a745; color: white; padding: 10px; border: none; margin-top: 15px; cursor: pointer; width: 100%; }
         .back-link { display: block; margin-top: 15px; color: #007bff; text-decoration: none; }
+        .preview-img { width: 100%; max-width: 300px; height: auto; border-radius: 5px; display: block; margin: 15px auto; }
     </style>
 </head>
 <body>
@@ -24,17 +26,25 @@
         <nav id="navbar">
             <a href="/">Home</a>
             <a href="/listings">Listings</a>
-            <% if (user) { %>
-                <span class="nav-right">Welcome, <%= user.username %>! <a href="/logout">Logout</a></span>
-            <% } else { %>
-                <span class="nav-right"><a href="/login">Login</a> | <a href="/register">Register</a></span>
-            <% } %>
+            <div class="nav-right">
+                <% if (user) { %>
+                    <span>Welcome, <%= user.username %>!</span>
+                    <a href="/logout">Logout</a>
+                <% } else { %>
+                    <a href="/login">Login</a> | <a href="/register">Register</a>
+                <% } %>
+            </div>
         </nav>
     </header>
     <main>
         <h1>Edit Listing</h1>
 
-        <form action="/listings/<%= listing.id %>?_method=PUT" method="POST">
+        <% if (listing.image_url) { %>
+            <p>Current Image:</p>
+            <img class="preview-img" src="<%= listing.image_url.startsWith('/uploads/') ? listing.image_url : '/uploads/' + listing.image_url %>" alt="House Image">
+        <% } %>
+
+        <form action="/listings/<%= listing.id %>?_method=PUT" method="POST" enctype="multipart/form-data">
             <label for="type">Type:</label>
             <select id="type" name="type" required>
                 <option value="rent" <%= listing.type === 'rent' ? 'selected' : '' %>>Rent</option>
@@ -50,6 +60,9 @@
                 <option value="sold" <%= listing.status === 'sold' ? 'selected' : '' %>>Sold</option>
                 <option value="rented" <%= listing.status === 'rented' ? 'selected' : '' %>>Rented</option>
             </select>
+
+            <label for="image">Upload New Image:</label>
+            <input type="file" id="image" name="image" accept="image/*">
 
             <button type="submit">Update Listing</button>
         </form>

@@ -1,6 +1,6 @@
-<%- include('../layout', { title: "Create Listing", content: `
+<%- include('../layout', { title: "Create Listing", content: ` 
     <h1>Create a New Listing</h1>
-    <form action="/listings" method="POST">
+    <form action="/listings" method="POST" enctype="multipart/form-data"> <!-- Added enctype for file upload -->
         <label for="type">Type:</label>
         <select id="type" name="type" required>
             <option value="rent">Rent</option>
@@ -16,6 +16,9 @@
             <option value="sold">Sold</option>
             <option value="rented">Rented</option>
         </select>
+
+        <label for="image">Upload Image:</label> <!-- Added file input -->
+        <input type="file" id="image" name="image" accept="image/*">
 
         <button type="submit">Create Listing</button>
     </form>
